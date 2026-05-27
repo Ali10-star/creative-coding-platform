@@ -1,0 +1,149 @@
+/* ============================================================================
+   BAUHAUS DESIGN SYSTEM — globals.css
+   Tailwind CSS v4 (Next.js 16 default)
+   
+   Token strategy:
+   - Custom properties under @theme become available as Tailwind utilities
+     automatically. e.g. --color-bauhaus-red → bg-bauhaus-red, text-bauhaus-red
+   - Custom @utility blocks define our hard-shadow + press-effect utilities
+     that don't fit cleanly into a single token.
+   - Component classes (@layer components) are used SPARINGLY — only for
+     things composed of many utilities that repeat across pages.
+============================================================================ */
+
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+   FONT — Outfit (geometric sans-serif, Google Fonts)
+   Loaded via next/font in app/layout.tsx as `--font-outfit`.
+   Here we just tell Tailwind which CSS variable to use as the "sans" family.
+--------------------------------------------------------------------------- */
+@theme {
+  --font-sans: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
+
+  /* ---------------------- BAUHAUS PALETTE ---------------------- */
+  /* Surfaces */
+  --color-bauhaus-bg: #F0F0F0;       /* Off-white canvas */
+  --color-bauhaus-fg: #121212;       /* Stark black (text + borders) */
+  --color-bauhaus-muted: #E0E0E0;    /* Subtle dividers, disabled states */
+
+  /* Primary trio — the only accent colors allowed */
+  --color-bauhaus-red: #D02020;
+  --color-bauhaus-blue: #1040C0;
+  --color-bauhaus-yellow: #F0C020;
+
+  /* Yellow surface for accordion expanded state, etc. */
+  --color-bauhaus-cream: #FFF9C4;
+
+  /* Map Tailwind's semantic names to our palette so default utilities
+     (bg-background, text-foreground) also work. */
+  --color-background: var(--color-bauhaus-bg);
+  --color-foreground: var(--color-bauhaus-fg);
+  --color-border: var(--color-bauhaus-fg);
+  --color-muted: var(--color-bauhaus-muted);
+
+  /* ---------------------- TYPOGRAPHY SCALE ---------------------- */
+  /* Tracking — Bauhaus headlines want tight letter-spacing */
+  --tracking-tightest: -0.04em;
+
+  /* ---------------------- RADIUS ---------------------- */
+  /* Binary extremes only — square or fully round. Override Tailwind's defaults. */
+  --radius-none: 0px;
+  --radius-full: 9999px;
+
+  /* ---------------------- SHADOWS (hard offset, never blurred) ---------------------- */
+  /* These become shadow-bauhaus-sm, shadow-bauhaus-md, shadow-bauhaus-lg */
+  --shadow-bauhaus-sm: 3px 3px 0px 0px #121212;
+  --shadow-bauhaus: 4px 4px 0px 0px #121212;
+  --shadow-bauhaus-md: 6px 6px 0px 0px #121212;
+  --shadow-bauhaus-lg: 8px 8px 0px 0px #121212;
+}
+
+/* ---------------------------------------------------------------------------
+   BASE STYLES
+--------------------------------------------------------------------------- */
+@layer base {
+  html {
+    /* Off-white canvas as the page background */
+    background-color: var(--color-bauhaus-bg);
+    color: var(--color-bauhaus-fg);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    /* Bauhaus uses generous body text weight */
+    font-weight: 500;
+  }
+
+  /* Headlines are always uppercase + black weight + tight tracking */
+  h1, h2, h3, h4 {
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-tightest);
+    line-height: 0.9;
+  }
+
+  /* Selection picks up the Bauhaus yellow */
+  ::selection {
+    background-color: var(--color-bauhaus-yellow);
+    color: var(--color-bauhaus-fg);
+  }
+
+  /* Focus rings use thick offset black, never the default blue glow */
+  *:focus-visible {
+    outline: 3px solid var(--color-bauhaus-fg);
+    outline-offset: 3px;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   CUSTOM UTILITIES — Bauhaus signature effects
+   In Tailwind v4 you define new utilities with @utility, and they accept
+   modifiers/variants like any built-in utility.
+--------------------------------------------------------------------------- */
+
+/* Button "press" effect: when active, the element slides into its shadow.
+   Use as: class="... active:bauhaus-press" alongside shadow-bauhaus. */
+@utility bauhaus-press {
+  transition: transform 100ms ease-out, box-shadow 100ms ease-out;
+}
+@utility bauhaus-press {
+  &:active {
+    transform: translate(2px, 2px);
+    box-shadow: none;
+  }
+}
+
+/* Card lift: subtle upward translate on hover. */
+@utility bauhaus-lift {
+  transition: transform 200ms ease-out;
+}
+@utility bauhaus-lift {
+  &:hover {
+    transform: translateY(-4px);
+  }
+}
+
+/* Dot-grid background pattern (used on colored panels for texture) */
+@utility bauhaus-dot-grid {
+  background-image: radial-gradient(currentColor 1.5px, transparent 1.5px);
+  background-size: 20px 20px;
+}
+
+/* Diagonal-stripe pattern for accent areas */
+@utility bauhaus-stripes {
+  background-image: repeating-linear-gradient(
+    45deg,
+    currentColor 0,
+    currentColor 4px,
+    transparent 4px,
+    transparent 12px
+  );
+}
+
+/* Triangle clip-path — for decorative corner accents */
+@utility bauhaus-triangle {
+  clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+}
