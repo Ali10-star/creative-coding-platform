@@ -1,0 +1,95 @@
+<!doctype html>
+<html>
+
+<head>
+    <style>
+        html,
+        body {
+            margin: 0;
+            height: 100%;
+            font-family: monospace;
+        }
+    </style>
+</head>
+
+<body>
+    <div style="border: 8px solid lime; padding: 4px; height: 100vh; box-sizing: border-box;">
+        <iframe id="f" src="/sketch-runner" sandbox="allow-scripts"
+            style="width: 100%; height: 100%; border: 0; display: block;"></iframe>
+    </div>
+    <script>
+        const TEST_CODE = `
+      // 1. Add visible text content
+      const heading = document.createElement('h1');
+      heading.textContent = 'IFRAME PIPELINE WORKS';
+      heading.style.cssText = 'font-family: monospace; color: #1040C0; margin: 24px;';
+      document.body.appendChild(heading);
+
+      // 2. Draw to a canvas (proves canvas APIs work — important for sketches)
+      const canvas = document.createElement('canvas');
+      canvas.width = 300;
+      canvas.height = 200;
+      canvas.style.cssText = 'border: 4px solid #121212; margin: 24px; display: block;';
+      document.body.appendChild(canvas);
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#D02020';
+      ctx.fillRect(20, 20, 120, 120);
+      ctx.fillStyle = '#F0C020';
+      ctx.beginPath();
+      ctx.arc(220, 80, 50, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 3. Read a param the parent sends in
+      const status = document.createElement('p');
+      status.style.cssText = 'font-family: monospace; margin: 24px;';
+      status.textContent = 'params.greeting = ' + JSON.stringify(params.greeting);
+      document.body.appendChild(status);
+
+      // 4. Register an action handler for the parent to trigger
+      onAction('flash', () => {
+        document.body.style.transition = 'background 0.1s';
+        document.body.style.background = '#F0C020';
+        setTimeout(() => { document.body.style.background = ''; }, 200);
+      });
+
+      // 5. Animation loop reading from params live
+      const dot = document.createElement('div');
+      dot.style.cssText = 'width:40px;height:40px;background:#1040C0;border-radius:50%;position:fixed;bottom:24px;left:24px;';
+      document.body.appendChild(dot);
+      function animate() {
+        const x = 24 + (Math.sin(Date.now() / 500) + 1) * (params.amplitude ?? 100);
+        dot.style.left = x + 'px';
+        requestAnimationFrame(animate);
+      }
+      animate();
+    `;
+
+        const f = document.getElementById('f');
+        window.addEventListener('message', (e) => {
+            console.log('Parent received:', e.data);
+            if (e.data.type === 'ready') {
+                console.log('Sending init...');
+                f.contentWindow.postMessage({
+                    type: 'init',
+                    code: TEST_CODE,
+                    params: { greeting: 'hello from parent', amplitude: 100 },
+                    importMap: { imports: {} },
+                }, '*');
+
+                // After 2 seconds, change the amplitude — dot should move further
+                setTimeout(() => {
+                    console.log('Updating param: amplitude → 400');
+                    f.contentWindow.postMessage({ type: 'updateParam', name: 'amplitude', value: 400 }, '*');
+                }, 2000);
+
+                // After 4 seconds, fire the "flash" action
+                setTimeout(() => {
+                    console.log('Triggering action: flash');
+                    f.contentWindow.postMessage({ type: 'action', name: 'flash' }, '*');
+                }, 4000);
+            }
+        });
+    </script>
+</body>
+
+</html>
