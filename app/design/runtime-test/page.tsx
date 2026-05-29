@@ -1,6 +1,7 @@
 'use client';
 
 import SketchEmbed from '@/components/SketchEmbed';
+import { p5Circle } from '@/lib/fixtures/sketches/p5-circle';
 
 const VANILLA_CANVAS_CODE = `
   // Create a full-bleed canvas. The runner's body already has overflow:hidden
@@ -89,9 +90,12 @@ const VANILLA_CANVAS_CODE = `
 export default function RuntimeTestPage() {
   return (
     <main className="min-h-screen p-8">
-      <h1 className="mb-6 text-4xl">Runtime Test</h1>
+      <h1 className="mb-6 text-4xl">{p5Circle.title}</h1>
+      <p className="mb- 6 text-sm font-bold tracking-widest uppercase">
+        Runtime: {p5Circle.runtime}
+      </p>
       <div className="h-[70vh]">
-        <SketchEmbed runtime="vanilla" code={VANILLA_CANVAS_CODE} />
+        <SketchEmbed runtime={p5Circle.runtime} code={p5Circle.code} />
       </div>
     </main>
   );

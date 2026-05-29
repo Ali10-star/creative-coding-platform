@@ -1,7 +1,7 @@
 import { Runtime } from './schemas/parameterSchmea';
 
 export const BASE_IMPORT_MAPS: Record<Runtime, Record<string, string>> = {
-  p5: { p5: 'https://esm.sh/p5' },
+  p5: { p5: 'https://esm.sh/p5@1.11.13' },
   three: { three: 'https://esm.sh/three' },
   pixi: { pixi: 'https://esm.sh/pixi.js@8.11.0' },
   vanilla: {},

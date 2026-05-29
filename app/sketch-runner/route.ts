@@ -106,7 +106,7 @@ export async function GET() {
       'Content-Type': 'text/html; charset=utf-8',
       'Content-Security-Policy': [
         "default-src 'none'",
-        "script-src 'self' 'unsafe-inline' https://esm.sh blob:",
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://esm.sh blob:",
         "script-src-elem 'self' 'unsafe-inline' https://esm.sh blob:",
         "style-src 'self' 'unsafe-inline'",
         "img-src 'self' data: blob:",
