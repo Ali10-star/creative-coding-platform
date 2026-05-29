@@ -3,7 +3,7 @@ const RUNNER_HTML = `<!doctype html>
 <head>
   <meta charset="utf-8">
   <style>
-    html, body { margin: 0; padding: 0; overflow: hidden; background: #fff; }
+    html, body { margin: 0; padding: 0; overflow: hidden; }
     canvas { display: block; }
   </style>
   <script type="importmap" id="sketch-importmap"></script>
@@ -48,7 +48,7 @@ const RUNNER_HTML = `<!doctype html>
 
         // inject the import maps BEFORE the code runs
         if (msg.importMap) {
-          document.getElementById('sketch-importmap').textContent = JSON.stringify(msg.importmap);
+          document.getElementById('sketch-importmap').textContent = JSON.stringify(msg.importMap);
           console.log('[runner] import map injected');
         }
 
@@ -75,7 +75,25 @@ const RUNNER_HTML = `<!doctype html>
       }
     });
 
-    // Tell parent we're ready for init
+    // Tell parent we're ready for init.
+    // We retry because the parent's listener may not be attached yet
+    // (especially in React/Next.js where listeners attach after hydration).
+    let initialized = false;
+    window.addEventListener('message', (e) => {
+      if (e.data?.type === 'init') initialized = true;
+    });
+
+    let attempts = 0;
+    const readyInterval = setInterval(() => {
+      if (initialized || attempts > 100) {
+        clearInterval(readyInterval);
+        return;
+      }
+      parent.postMessage({ type: 'ready' }, parentOrigin);
+      attempts++;
+    }, 50);
+
+    // Also fire one immediately, in case the listener IS already attached.
     parent.postMessage({ type: 'ready' }, parentOrigin);
   </script>
 </body>
@@ -88,9 +106,10 @@ export async function GET() {
       'Content-Type': 'text/html; charset=utf-8',
       'Content-Security-Policy': [
         "default-src 'none'",
-        "script-src 'unsafe-inline' https://esm.sh blob:",
-        "style-src 'unsafe-inline'",
-        'img-src data: blob:',
+        "script-src 'self' 'unsafe-inline' https://esm.sh blob:",
+        "script-src-elem 'self' 'unsafe-inline' https://esm.sh blob:",
+        "style-src 'self' 'unsafe-inline'",
+        "img-src 'self' data: blob:",
         'connect-src https://esm.sh',
         'font-src data:',
         'worker-src blob:',

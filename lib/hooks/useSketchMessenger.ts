@@ -22,7 +22,7 @@ interface Options {
   onError: (err: { message: string; stack?: string }) => void;
 }
 
-export function useSketchMessanger({ iframeRef, onReady, onError }: Options) {
+export function useSketchMessenger({ iframeRef, onReady, onError }: Options) {
   const onReadyRef = useRef(onReady);
   const onErrorRef = useRef(onError);
 
@@ -37,25 +37,15 @@ export function useSketchMessanger({ iframeRef, onReady, onError }: Options) {
   useEffect(() => {
     function handle(e: MessageEvent<SketchMessage>) {
       if (e.source !== iframeRef.current?.contentWindow) return;
-
-      //! Same-origin runner today; if you move it to a separate domain later,
-      //! add an explicit origin allowlist check here.
-
-      if (e.data?.type === 'ready') {
-        onReadyRef.current();
-      }
-
-      if (e.data?.type === 'error') {
-        onErrorRef.current({
-          message: e.data.message,
-          stack: e.data.stack,
-        });
-      }
+      if (e.data?.type === 'ready') onReadyRef.current();
+      if (e.data?.type === 'error')
+        onErrorRef.current({ message: e.data.message, stack: e.data.stack });
     }
 
     window.addEventListener('message', handle);
-
-    return () => window.removeEventListener('message', handle);
+    return () => {
+      window.removeEventListener('message', handle);
+    };
   }, [iframeRef]);
 
   const post = useCallback(

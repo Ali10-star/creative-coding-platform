@@ -1,6 +1,6 @@
 'use client';
 
-import { useSketchMessanger } from '@/lib/hooks/useSketchMessenger';
+import { useSketchMessenger } from '@/lib/hooks/useSketchMessenger';
 import { BASE_IMPORT_MAPS } from '@/lib/runtimeTemplates';
 import { Runtime } from '@/lib/schemas/parameterSchmea';
 import { useRef, useState } from 'react';
@@ -21,7 +21,7 @@ const SketchEmbed: React.FC<Props> = ({ code, runtime, extraImports = {} }) => {
     stack?: string;
   } | null>(null);
 
-  const { post } = useSketchMessanger({
+  const { post } = useSketchMessenger({
     iframeRef,
     onReady: () => {
       post({
@@ -32,6 +32,7 @@ const SketchEmbed: React.FC<Props> = ({ code, runtime, extraImports = {} }) => {
           imports: { ...BASE_IMPORT_MAPS[runtime], ...extraImports },
         },
       });
+      setStatus('running');
     },
     onError: (err) => {
       setError(err);
@@ -45,7 +46,7 @@ const SketchEmbed: React.FC<Props> = ({ code, runtime, extraImports = {} }) => {
         ref={iframeRef}
         src="/sketch-runner"
         className="block h-full w-full border-0"
-        sandbox="allow-scripts"
+        // sandbox="allow-scripts"
         title="Sketch"
       />
       {status === 'loading' && (
