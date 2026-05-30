@@ -78,7 +78,7 @@ const SketchEmbed: React.FC<Props> = ({
           ref={iframeRef}
           src="/sketch-runner"
           className="block h-full w-full border-0"
-          // sandbox="allow-scripts"
+          sandbox="allow-scripts"
           title="Sketch"
         />
         {status === 'loading' && (
