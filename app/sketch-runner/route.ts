@@ -44,6 +44,8 @@ const RUNNER_HTML = `<!doctype html>
     window.addEventListener('error', (e) => window.reportError(e.error || new Error(e.message)));
     window.addEventListener('unhandledrejection', (e) => window.reportError(e.reason));
 
+    let initReceived = false;
+
     // Message handler — receives init/updateParam/action from parent
     window.addEventListener('message', async (e) => {
       // Origin check: when parentOrigin is '*' we trust same-window; otherwise verify.
@@ -51,6 +53,12 @@ const RUNNER_HTML = `<!doctype html>
 
       const msg = e.data;
       if (msg.type === 'init') {
+        if (initReceived) {
+          console.warn('[runner] ignoring duplicate init');
+          return;
+        }
+        initReceived = true;
+
         console.log('[runner] init received', msg);
         params = { ...msg.params };
 
