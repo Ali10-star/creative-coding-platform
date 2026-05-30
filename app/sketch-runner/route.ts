@@ -3,6 +3,7 @@ const IMPORT_MAP = JSON.stringify({
     'p5': 'https://esm.sh/p5@1.9.4',
     'three': 'https://esm.sh/three@0.160.0',
     'pixi.js': 'https://esm.sh/pixi.js@8.6.0',
+    "tone": "https://esm.sh/tone@15.0.4"
   },
 });
 
