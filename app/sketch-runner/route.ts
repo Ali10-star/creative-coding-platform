@@ -1,3 +1,11 @@
+const IMPORT_MAP = JSON.stringify({
+  imports: {
+    'p5': 'https://esm.sh/p5@1.9.4',
+    'three': 'https://esm.sh/three@0.160.0',
+    'pixi.js': 'https://esm.sh/pixi.js@8.6.0',
+  },
+});
+
 const RUNNER_HTML = `<!doctype html>
 <html>
 <head>
@@ -6,7 +14,7 @@ const RUNNER_HTML = `<!doctype html>
     html, body { margin: 0; padding: 0; overflow: hidden; }
     canvas { display: block; }
   </style>
-  <script type="importmap" id="sketch-importmap"></script>
+  <script type="importmap" id="sketch-importmap">${IMPORT_MAP}</script>
 </head>
 <body>
   <script type="module">
@@ -22,13 +30,13 @@ const RUNNER_HTML = `<!doctype html>
     window.params = new Proxy({}, {
       get(_, key) { return params[key]; }
     });
-    
+
     window.onAction = (name, fn) => { actionHandlers[name] = fn; };
 
     window.reportError = (err) => {
       parent.postMessage(
         { type: 'error', message: err.message, stack: err.stack },
-        parentOrigin 
+        parentOrigin
       );
     };
 
@@ -101,6 +109,20 @@ const RUNNER_HTML = `<!doctype html>
 `;
 
 export async function GET() {
+  // const url = new URL(request.url);
+  // const runtime = url.searchParams.get('runtime') ?? 'vanilla';
+
+  // const IMPORT_MAPS: Record<string, Record<string, string>> = {
+  //   p5: { p5: 'https://esm.sh/p5@1.11.13' },
+  //   three: { three: 'https://esm.sh/three' },
+  //   pixi: { pixi: 'https://esm.sh/pixi.js@8.11.0' },
+  //   vanilla: {},
+  // };
+
+  // const importMap = JSON.stringify({ imports: IMPORT_MAPS[runtime] ?? {} });
+
+  // const RUNNER_HTML = getRunnerHtml(importMap);
+
   return new Response(RUNNER_HTML, {
     headers: {
       'Content-Type': 'text/html; charset=utf-8',

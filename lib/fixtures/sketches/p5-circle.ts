@@ -1,4 +1,4 @@
-import { Sketch } from '@/lib/schemas/parameterSchmea';
+import { Sketch } from '@/lib/schemas/parameterSchema';
 
 export const p5Circle: Sketch = {
   id: 'fixture-p5-circle',
@@ -26,7 +26,7 @@ export const p5Circle: Sketch = {
   actions: [],
   extraImports: {},
   parameters: [
-    { name: 'size', type: 'number', default: 100 },
-    { name: 'color', type: 'color', default: '#FF0000' },
+    { name: 'size', type: 'number', default: 125 },
+    { name: 'color', type: 'color', default: '#1040C0' },
   ],
 };

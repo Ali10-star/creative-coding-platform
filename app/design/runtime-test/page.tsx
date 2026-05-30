@@ -95,7 +95,7 @@ export default function RuntimeTestPage() {
         Runtime: {p5Circle.runtime}
       </p>
       <div className="h-[70vh]">
-        <SketchEmbed runtime={p5Circle.runtime} code={p5Circle.code} />
+        <SketchEmbed runtime={p5Circle.runtime} code={p5Circle.code} parameters={p5Circle.parameters} />
       </div>
     </main>
   );

@@ -1,4 +1,4 @@
-import { Runtime } from './schemas/parameterSchmea';
+import { Runtime } from './schemas/parameterSchema';
 
 export const BASE_IMPORT_MAPS: Record<Runtime, Record<string, string>> = {
   p5: { p5: 'https://esm.sh/p5@1.11.13' },

@@ -17,7 +17,7 @@ const numberParam = z.object({
   min: z.number().optional(),
   max: z.number().optional(),
   step: z.number().optional(),
-  lable: z.string().optional(),
+  label: z.string().optional(),
 });
 
 const booleanParam = z.object({
@@ -59,6 +59,7 @@ export const ActionSchema = z.array(
   z.object({
     name: z.string().min(1),
     label: z.string().optional(),
+    cooldownMs: z.number().int().min(0).optional(),
   }),
 );
 
