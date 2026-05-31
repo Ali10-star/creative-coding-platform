@@ -10,7 +10,8 @@ export const threeCube: Sketch = {
 
   // ---- Scene setup ----
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(params.bgColor ?? '#F0F0F0');
+  let lastBgColor = params.bgColor ?? '#F0F0F0';
+  scene.background = new THREE.Color(lastBgColor);
 
   const camera = new THREE.PerspectiveCamera(75, innerWidth / innerHeight, 0.1, 1000);
   camera.position.z = 5;
@@ -42,6 +43,10 @@ export const threeCube: Sketch = {
   // Remember the last-applied values so we know when to rebuild.
   let lastShape = params.shape ?? 'cube';
   let lastWireframe = params.wireframe ?? false;
+  let smoothedSpeedX = params.speedX ?? 1;
+  let smoothedSpeedY = params.speedY ?? 1;
+  let smoothedScale = params.scale ?? 1;
+  let smoothedCameraZ = params.cameraZ ?? 5;
 
   // ---- Actions ----
   onAction('reset', () => {
@@ -93,19 +98,28 @@ export const threeCube: Sketch = {
       lastWireframe = params.wireframe ?? false;
     }
 
-    // Sync background each frame — cheap, and means color picker updates instantly.
-    scene.background.set(params.bgColor ?? '#F0F0F0');
+    // Avoid re-parsing color strings every frame when the value is unchanged.
+    const nextBgColor = params.bgColor ?? '#F0F0F0';
+    if (nextBgColor !== lastBgColor) {
+      scene.background.set(nextBgColor);
+      lastBgColor = nextBgColor;
+    }
+
+    // Smooth parameter updates so rapid UI events still feel continuous.
+    smoothedSpeedX += ((params.speedX ?? 1) - smoothedSpeedX) * 0.2;
+    smoothedSpeedY += ((params.speedY ?? 1) - smoothedSpeedY) * 0.2;
+    smoothedScale += ((params.scale ?? 1) - smoothedScale) * 0.2;
+    smoothedCameraZ += ((params.cameraZ ?? 5) - smoothedCameraZ) * 0.2;
 
     // Rotation driven by params.
-    mesh.rotation.x += (params.speedX ?? 1) * 0.01;
-    mesh.rotation.y += (params.speedY ?? 1) * 0.01;
+    mesh.rotation.x += smoothedSpeedX * 0.01;
+    mesh.rotation.y += smoothedSpeedY * 0.01;
 
     // Scale also driven by params.
-    const s = params.scale ?? 1;
-    mesh.scale.set(s, s, s);
+    mesh.scale.set(smoothedScale, smoothedScale, smoothedScale);
 
     // Camera distance via param.
-    camera.position.z = params.cameraZ ?? 5;
+    camera.position.z = smoothedCameraZ;
 
     renderer.render(scene, camera);
     requestAnimationFrame(animate);

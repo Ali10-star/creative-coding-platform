@@ -2,15 +2,18 @@
 
 import { useEffect, useRef, useCallback } from 'react';
 
-type Post = (msg: { type: 'updateParam'; name: string; value: unknown }) => void;
+type Post = (msg:
+  | { type: 'updateParam'; name: string; value: unknown }
+  | { type: 'updateParams'; updates: Record<string, unknown> }
+) => void;
 
 /**
  ** Coalesces parameter updates so we post at most **once** per animation frame.
  *
  * - If the same `name` is set multiple times within a frame, only the latest
  *   value is sent (older ones are discarded — they'd be overwritten anyway).
- * - If different `name`s are set within a frame, each is sent as its own
- *   message on the next frame.
+ * - If different `name`s are set within a frame, they are sent together as one
+ *   `updateParams` message on the next frame.
  * - Pending updates flush automatically; no manual flush needed.
  * - Cleanup cancels any pending frame on unmount.
  */
@@ -22,9 +25,12 @@ export function useBatchedPost(post: Post) {
   const flush = useCallback(() => {
     rafId.current = null;
 
-    for (const [name, value] of pending.current) {
-      post({ type: 'updateParam', name, value });
-    }
+    if (pending.current.size === 0) return;
+
+    post({
+      type: 'updateParams',
+      updates: Object.fromEntries(pending.current.entries()),
+    });
 
     pending.current.clear();
   }, [post]);

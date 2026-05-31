@@ -86,6 +86,10 @@ const RUNNER_HTML = `<!doctype html>
         params[msg.name] = msg.value;
       }
 
+      if (msg.type === 'updateParams' && msg.updates && typeof msg.updates === 'object') {
+        Object.assign(params, msg.updates);
+      }
+
       if (msg.type === 'action' && actionHandlers[msg.name]) {
         try { actionHandlers[msg.name](); }
         catch (err) { window.reportError(err); }

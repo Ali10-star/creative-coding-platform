@@ -36,6 +36,9 @@ const SketchEmbed: React.FC<Props> = ({
   const [values, setValues] = useState<Record<string, unknown>>(() =>
     Object.fromEntries(parameters.map((p) => [p.name, p.default])),
   );
+  const valuesRef = useRef(values);
+  const pendingUiUpdatesRef = useRef<Map<string, unknown>>(new Map());
+  const uiRafRef = useRef<number | null>(null);
 
   const [error, setError] = useState<{
     message: string;
@@ -64,7 +67,7 @@ const SketchEmbed: React.FC<Props> = ({
       post({
         type: 'init',
         code,
-        params: values,
+        params: { ...valuesRef.current },
         importMap: {
           imports: { ...BASE_IMPORT_MAPS[runtime], ...extraImports },
         },
@@ -106,12 +109,43 @@ const SketchEmbed: React.FC<Props> = ({
 
   const queueUpdate = useBatchedPost(post);
 
+  const flushUiUpdates = useCallback(() => {
+    uiRafRef.current = null;
+    if (pendingUiUpdatesRef.current.size === 0) return;
+
+    const updates = Object.fromEntries(pendingUiUpdatesRef.current.entries());
+    pendingUiUpdatesRef.current.clear();
+
+    setValues((prev) => ({ ...prev, ...updates }));
+  }, []);
+
+  const queueUiUpdate = useCallback(
+    (name: string, value: unknown) => {
+      valuesRef.current[name] = value;
+      pendingUiUpdatesRef.current.set(name, value);
+
+      if (uiRafRef.current === null) {
+        uiRafRef.current = requestAnimationFrame(flushUiUpdates);
+      }
+    },
+    [flushUiUpdates],
+  );
+
+  useEffect(
+    () => () => {
+      if (uiRafRef.current !== null) {
+        cancelAnimationFrame(uiRafRef.current);
+      }
+    },
+    [],
+  );
+
   const updateParam = useCallback(
     (name: string, value: unknown) => {
-      setValues((prev) => ({ ...prev, [name]: value }));
+      queueUiUpdate(name, value);
       queueUpdate(name, value);
     },
-    [queueUpdate],
+    [queueUiUpdate, queueUpdate],
   );
 
   const triggerAction = useCallback(

@@ -1,6 +1,6 @@
 'use client';
 
-import { useId, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 
 interface Props {
   label: string;
@@ -9,8 +9,26 @@ interface Props {
 }
 
 const ColorPicker: React.FC<Props> = ({ label, value, onChange }) => {
-  const [isValidHex, setIsValidHex] = useState(false);
+  const [textValue, setTextValue] = useState(value);
+  const debounceTimerRef = useRef<number | null>(null);
   const id = useId();
+
+  useEffect(() => {
+    setTextValue(value);
+  }, [value]);
+
+  useEffect(
+    () => () => {
+      if (debounceTimerRef.current !== null) {
+        window.clearTimeout(debounceTimerRef.current);
+      }
+    },
+    [],
+  );
+
+  const emitColor = (next: string) => {
+    onChange(next);
+  };
 
   return (
     <div>
@@ -32,25 +50,39 @@ const ColorPicker: React.FC<Props> = ({ label, value, onChange }) => {
             id={id}
             type="color"
             value={value}
-            onChange={(e) => onChange(e.target.value)}
+            onInput={(e) => {
+              const next = e.currentTarget.value;
+              setTextValue(next);
+              emitColor(next);
+            }}
+            onChange={(e) => {
+              const next = e.currentTarget.value;
+              setTextValue(next);
+              emitColor(next);
+            }}
             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
           />
         </label>
 
         <input
           type='text'
-          value={value}
+          value={textValue}
           onChange={(e) => {
             const next = e.target.value;
-            // Only propagate if it's a valid 6-char hex (the schema validator
-            // will catch invalid values, but we filter here to avoid spamming
-            // postMessage with partial input mid-typing).
+            setTextValue(next);
+
+            // Only propagate complete hex values; this avoids sending partial
+            // values while users are still typing.
             const hexCodeRegex = /^#[0-9a-fA-F]{6}$/;
+            if (!hexCodeRegex.test(next)) return;
 
-            const isValid = hexCodeRegex.test(next);
-            setIsValidHex(isValid);
+            if (debounceTimerRef.current !== null) {
+              window.clearTimeout(debounceTimerRef.current);
+            }
 
-            onChange(next);
+            debounceTimerRef.current = window.setTimeout(() => {
+              emitColor(next);
+            }, 80);
           }}
           className="flex-1 border-2 border-bauhaus-fg px-2 py-1 text-sm font-mono font-bold uppercase focus:outline-none focus:bg-bauhaus-yellow/30"
           maxLength={7}

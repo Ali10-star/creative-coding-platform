@@ -10,6 +10,7 @@ type ParentMessage =
       importMap?: object;
     }
   | { type: 'updateParam'; name: string; value: unknown }
+  | { type: 'updateParams'; updates: Record<string, unknown> }
   | { type: 'action'; name: string };
 
 type SketchMessage =
