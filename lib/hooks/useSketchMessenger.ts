@@ -14,17 +14,24 @@ type ParentMessage =
 
 type SketchMessage =
   | { type: 'ready' }
+  | { type: 'heartbeat' }
   | { type: 'error'; message: string; stack?: string };
 
 interface Options {
   iframeRef: RefObject<HTMLIFrameElement | null>;
   onReady: () => void;
   onError: (err: { message: string; stack?: string }) => void;
+  onHeartbeat: () => void;
 }
 
-export function useSketchMessenger({ iframeRef, onReady, onError }: Options) {
+export function useSketchMessenger({ iframeRef, onReady, onError, onHeartbeat }: Options) {
   const onReadyRef = useRef(onReady);
   const onErrorRef = useRef(onError);
+  const onHeartbeatRef = useRef(onHeartbeat);
+
+  useEffect(() => {
+    onHeartbeatRef.current = onHeartbeat;
+  }, [onHeartbeat]);
 
   useEffect(() => {
     onReadyRef.current = onReady;
@@ -38,6 +45,7 @@ export function useSketchMessenger({ iframeRef, onReady, onError }: Options) {
     function handle(e: MessageEvent<SketchMessage>) {
       if (e.source !== iframeRef.current?.contentWindow) return;
       if (e.data?.type === 'ready') onReadyRef.current();
+      if (e.data?.type === 'heartbeat') onHeartbeatRef.current?.();
       if (e.data?.type === 'error')
         onErrorRef.current({ message: e.data.message, stack: e.data.stack });
     }

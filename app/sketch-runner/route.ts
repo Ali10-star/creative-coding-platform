@@ -92,6 +92,21 @@ const RUNNER_HTML = `<!doctype html>
       }
     });
 
+    // Heartbeat — pings the parent every ~60 frames (≈1s at 60fps) so the
+    // parent's watchdog knows the sketch is alive. If we stop sending these,
+    // the watchdog will kill the iframe.
+    let frameCount = 0;
+
+    function tick() {
+      if (++frameCount % 60 === 0) {
+        parent.postMessage({ type: 'heartbeat' }, parentOrigin);
+      }
+
+      requestAnimationFrame(tick);
+    }
+
+    tick();
+
     // Tell parent we're ready for init.
     // We retry because the parent's listener may not be attached yet
     // (especially in React/Next.js where listeners attach after hydration).
