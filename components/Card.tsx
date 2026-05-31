@@ -2,8 +2,8 @@
 import type { HTMLAttributes, ReactNode } from "react";
 import { cn } from "@/lib/cn";
 
-type CornerShape = "circle" | "square" | "triangle" | "none";
-type CornerColor = "red" | "blue" | "yellow";
+export type CornerShape = "circle" | "square" | "triangle" | "none";
+export type CornerColor = "red" | "blue" | "yellow";
 
 interface Props extends HTMLAttributes<HTMLDivElement> {
   cornerShape?: CornerShape;
