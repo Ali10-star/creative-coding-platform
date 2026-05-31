@@ -11,7 +11,7 @@ export default async function RuntimeTestPage({ searchParams }: Props) {
     FIXTURES[slug as keyof typeof FIXTURES] ?? FIXTURES['p5-circle'];
 
   return (
-    <main className="min-h-screen p-8">
+    <main className="min-h-screen p-8 pb-24">
       <nav className="mb-6 flex gap-3">
         {Object.values(FIXTURES).map((s) => (
           <a
@@ -27,7 +27,7 @@ export default async function RuntimeTestPage({ searchParams }: Props) {
       <p className="mb- 6 text-sm font-bold tracking-widest uppercase">
         Runtime: {sketch.runtime}
       </p>
-      <div className="h-[70vh]">
+      <div className="mb-10 h-[70vh]">
         <SketchEmbed
           runtime={sketch.runtime}
           code={sketch.code}

@@ -1,10 +1,12 @@
 'use client';
 
 import { useBatchedPost } from '@/lib/hooks/useBatchedPost';
+import { cn } from '@/lib/cn';
 import { useSketchMessenger } from '@/lib/hooks/useSketchMessenger';
 import { BASE_IMPORT_MAPS } from '@/lib/runtimeTemplates';
 import { Action, Parameter, Runtime } from '@/lib/schemas/parameterSchema';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { Button } from './Button';
 import ParameterControls from './ParameterControls';
 
 interface Props {
@@ -16,6 +18,7 @@ interface Props {
 }
 
 type Status = 'loading' | 'running' | 'error';
+type ViewMode = 'split' | 'full-width';
 
 // How long the iframe can go without a heartbeat before we consider it dead.
 // Tuning notes:
@@ -33,6 +36,7 @@ const SketchEmbed: React.FC<Props> = ({
 }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [status, setStatus] = useState<Status>('loading');
+  const [viewMode, setViewMode] = useState<ViewMode>('split');
   const [values, setValues] = useState<Record<string, unknown>>(() =>
     Object.fromEntries(parameters.map((p) => [p.name, p.default])),
   );
@@ -155,40 +159,74 @@ const SketchEmbed: React.FC<Props> = ({
     [post],
   );
 
-  return (
-    <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 h-full">
-      <div className="border-bauhaus-fg relative h-full w-full border-4 bg-white">
-        <iframe
-          ref={iframeRef}
-          src="/sketch-runner"
-          className="block h-full w-full border-0"
-          sandbox="allow-scripts"
-          allow=""
-          referrerPolicy="no-referrer"
-          title="Sketch"
-        />
-        {status === 'loading' && (
-          <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-white">
-            <span className="text-sm font-bold tracking-widest uppercase">
-              Initializing Sketch...
-            </span>
-          </div>
-        )}
+  const isFullWidth = viewMode === 'full-width';
 
-        {error && (
-          <div className="bg-bauhaus-red border-bauhaus-fg shadow-bauhaus-sm text- sm absolute right-4 bottom-4 left-4 border-2 px-3 py-2 font-bold tracking-wider text-white uppercase">
-            {error.message}
-          </div>
-        )}
+  return (
+    <div className="flex h-full flex-col gap-4">
+      <div className="flex flex-wrap items-center justify-end gap-2">
+        <Button
+          variant={isFullWidth ? 'outline' : 'yellow'}
+          size="sm"
+          onClick={() => setViewMode('split')}
+        >
+          Split View
+        </Button>
+        <Button
+          variant={isFullWidth ? 'yellow' : 'outline'}
+          size="sm"
+          onClick={() => setViewMode('full-width')}
+        >
+          Full-Width Sketch
+        </Button>
       </div>
 
-      <ParameterControls
-        schema={parameters}
-        values={values}
-        actions={actions}
-        onChange={updateParam}
-        onAction={triggerAction}
-      />
+      <div
+        className={cn(
+          'h-full',
+          isFullWidth
+            ? 'flex min-h-0 flex-col gap-4'
+            : 'grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]',
+        )}
+      >
+        <div className="border-bauhaus-fg relative h-full min-h-[360px] w-full border-4 bg-white">
+          <iframe
+            ref={iframeRef}
+            src="/sketch-runner"
+            className="block h-full w-full border-0"
+            sandbox="allow-scripts"
+            allow=""
+            referrerPolicy="no-referrer"
+            title="Sketch"
+          />
+          {status === 'loading' && (
+            <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-white">
+              <span className="text-sm font-bold tracking-widest uppercase">
+                Initializing Sketch...
+              </span>
+            </div>
+          )}
+
+          {error && (
+            <div className="bg-bauhaus-red border-bauhaus-fg shadow-bauhaus-sm absolute right-4 bottom-4 left-4 border-2 px-3 py-2 text-sm font-bold tracking-wider text-white uppercase">
+              {error.message}
+            </div>
+          )}
+        </div>
+
+        <ParameterControls
+          schema={parameters}
+          values={values}
+          actions={actions}
+          onChange={updateParam}
+          onAction={triggerAction}
+          layout={isFullWidth ? 'horizontal' : 'vertical'}
+          className={
+            isFullWidth
+              ? 'w-full flex-none overflow-y-auto'
+              : 'h-[520px] max-h-full self-start overflow-y-auto'
+          }
+        />
+      </div>
     </div>
   );
 };
